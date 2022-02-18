@@ -1,0 +1,22 @@
+{
+  "name": "if3260-2d-cad",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darubagus/IF3260-2D-CAD.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/darubagus/IF3260-2D-CAD/issues"
+  },
+  "homepage": "https://github.com/darubagus/IF3260-2D-CAD#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
+}
