@@ -15,10 +15,8 @@ const helloWorld = () => {
     console.log('Hello World!');
 }
 
-const toolbarButton = document.getElementsByClassName('toolbar-button');
-
-
-const canvas = document.querySelector('#main-canvas');
-canvas.addEventListener('click', (e) => {
-    printMousePos(canvas, e);
-});
+module.exports = {
+    getMousePosCanvas,
+    printMousePos,
+    helloWorld
+}

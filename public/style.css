@@ -1,0 +1,25 @@
+/* body background color grey */
+body {
+    background-color: #363636;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* canvas background color white and centered and 800x600 size*/
+canvas {
+    background-color: #FFFFFF;
+    width: 800px;
+    height: 500px;
+}
+
+.toolbar {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 800px;
+    height: 50px;
+    background-color: #1d1d1d;
+}

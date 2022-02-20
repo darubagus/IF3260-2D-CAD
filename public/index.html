@@ -1,16 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<link rel="stylesheet" href="style.css">
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title></title>
+
+	<script type="notjs" id="vertex-shader">
+		attribute vec3 position;
+		void main() {
+			gl_Position = vec4(position, 1.0);
+		}
+	</script>
+
+	<script type="notjs" id="fragment-shader">
+		void main() {
+			gl_FragColor = vec4(0,0,0,0);
+		}
+	</script>
+
+	<title>CAD Project 1</title>
 </head>
 <body>
 
-	<canvas></canvas>
+	<canvas id="main-canvas">
+
+	</canvas>
+
+	<!-- create toolbar -->
+	<div class="toolbar">
+		<div class="toolbar-item">
+			<button class="toolbar-button" id="btn-line">Line</button>
+		</div>
+		<div class="toolbar-item">
+			<button class="toolbar-button" id="btn-square">Square</button>
+		</div>
+		<div class="toolbar-item">
+			<button class="toolbar-button" id="btn-rectangle">Rectangle</button>
+		</div>
+		<div class="toolbar-item">
+			<button class="toolbar-button" id="btn-polygon">Polygon</button>
+		</div>
+		<div class="toolbar-item">
+			<button class="toolbar-button" id="btn-mouse">Mouse</button>
+		</div>
+	</div>
 
 	<!-- main app -->
-	<script type="text/javascript" src="app.js"></script>
+	<script type="text/javascript" type="module" src="app.js"></script>
 
 </body>
 </html>
