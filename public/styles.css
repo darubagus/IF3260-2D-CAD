@@ -1,0 +1,22 @@
+body {
+    margin: 0;
+}
+.flex {
+    display: flex;
+    flex-direction: row;
+}
+.flex-col {
+    display: flex;
+    flex-direction: column;
+}
+.sidebar {
+    min-width: 200px;
+    max-width: 200px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+#gl_canvas{
+    background-color: rgb(158, 206, 182);
+}

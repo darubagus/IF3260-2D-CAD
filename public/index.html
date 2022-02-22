@@ -2,15 +2,29 @@
 <html>
 <head>
 	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title></title>
+	<link rel="stylesheet" href="./styles.css"
 </head>
 <body>
-
-	<canvas></canvas>
+	<div class="flex">
+		<div class="sidebar">
+			<p>GrafkomPaint</p>
+			<div class="flex-col">
+				<p>Mouse position</p>
+				<p>X: <span id="x-pos"></span></p>
+				<p>Y: <span id="y-pos"></span></p>
+			</div>
+			<button id="draw-line">Draw Line</button>
+			<button id="draw-square">Draw Square</button>
+			<button id="draw-rect">Draw Rectangle</button>
+			<button id="draw-pol">Draw Polygons</button>
+		</div>
+		<canvas id="gl_canvas"></canvas>
+	</div>
 
 	<!-- main app -->
-	<script type="text/javascript" src="app.js"></script>
+	<script src="main.js" type="module"></script>
 
 </body>
 </html>
