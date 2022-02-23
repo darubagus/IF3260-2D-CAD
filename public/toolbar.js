@@ -1,3 +1,11 @@
+var buttonClicked = {
+    line : false,
+    square : false,
+    rectangle : false,
+    polygon : false
+};
+
+// Get the coordinate of the mouse click in the canvas
 const getMousePosCanvas = (canvas, evt) => {
     let rect = canvas.getBoundingClientRect();
     return {
@@ -6,17 +14,33 @@ const getMousePosCanvas = (canvas, evt) => {
     };
 }
 
-const printMousePos = (canvas, evt) => {
+// Convert the coordinate of the mouse click to the clipping coordinate
+const convertMousePos = (canvas, evt) => {
     let pos = getMousePosCanvas(canvas, evt);
-    console.log(`x: ${pos.x}, y: ${pos.y}`);
+    let x = pos.x / canvas.width * 2 - 1;
+    let y = -(pos.y / canvas.height * 2 - 1);
+    return {
+        x: x,
+        y: y
+    };
 }
 
-const helloWorld = () => {
-    console.log('Hello World!');
-}
+// Make all buttonClicked false
+const resetButtonClicked = () => {
+    buttonClicked.line = false;
+    buttonClicked.square = false;
+    buttonClicked.rectangle = false;
+    buttonClicked.polygon = false;
+};
 
-module.exports = {
-    getMousePosCanvas,
-    printMousePos,
-    helloWorld
-}
+
+const choseButton = (buttonId) => {
+    resetButtonClicked();
+    buttonClicked[buttonId] = true;
+};
+
+export {
+    choseButton,
+    buttonClicked,
+    convertMousePos
+};

@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/darubagus/IF3260-2D-CAD#readme",
   "dependencies": {
-    "express": "^4.17.3"
+    "cors": "^2.8.5",
+    "express": "^4.17.3",
+    "open": "^8.4.0"
   }
 }

@@ -5,16 +5,28 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 
-	<script type="notjs" id="vertex-shader">
-		attribute vec3 position;
+	<!-- simple vertex shader script for making line -->
+	<script id="vertex-shader" type="x-shader/x-vertex">
+		precision mediump float;
+
+		attribute vec3 a_position;
+		attribute vec3 a_color;
+		varying vec3 vColor;
+
 		void main() {
-			gl_Position = vec4(position, 1.0);
+			vColor = a_color;
+			gl_Position = vec4(a_position,1);
 		}
 	</script>
 
-	<script type="notjs" id="fragment-shader">
+	<!-- simple fragment shader script for making black line -->
+	<script id="fragment-shader" type="x-shader/x-fragment">
+		precision mediump float;
+		varying vec3 vColor;
+
 		void main() {
-			gl_FragColor = vec4(0,0,0,0);
+			// Solid color
+			gl_FragColor = vec4(vColor,1);
 		}
 	</script>
 
@@ -22,11 +34,10 @@
 </head>
 <body>
 
-	<canvas id="main-canvas">
+	<canvas id="canvas">
 
 	</canvas>
 
-	<!-- create toolbar -->
 	<div class="toolbar">
 		<div class="toolbar-item">
 			<button class="toolbar-button" id="btn-line">Line</button>
@@ -45,8 +56,9 @@
 		</div>
 	</div>
 
+
 	<!-- main app -->
-	<script type="text/javascript" type="module" src="app.js"></script>
+	<script type="module" src="./app.js"></script>
 
 </body>
 </html>
