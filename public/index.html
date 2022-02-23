@@ -3,14 +3,17 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="style.css">
 	<title></title>
 </head>
 <body>
-
-	<canvas></canvas>
-
-	<!-- main app -->
-	<script type="text/javascript" src="app.js"></script>
-
+	<div class="main">
+		<div class="menu"></div>
+		<div class="drawing-canvas">
+			<canvas id="gl-canvas"></canvas>
+		</div>
+		<!-- main app -->
+		<script type="text/javascript" src="app.js" defer></script>
+	</div>
 </body>
 </html>
