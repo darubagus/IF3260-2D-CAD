@@ -18,14 +18,10 @@ function createProgram(gl, vertexShader, fragmentShader) {
 }
 
 // Function for creating webgl buffer
-function createBuffer(gl, data, allData) {
+function createBuffer(gl, data) {
     let buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-    // Get buffer size using getBufferParameter
-    const bufferSize = gl.getBufferParameter(gl.ARRAY_BUFFER, gl.BUFFER_SIZE);
-    // Add data with the offset to allData
-    allData[bufferSize] = data;
 
     return buffer;
 }
@@ -40,9 +36,9 @@ function enableAttribute(gl, program, buffer, attribute, size, type, normalize, 
 }
 
 // Function to use program and drawarrays
-function drawArrays(gl, program, mode, count) {
+function drawArrays(gl, program, mode, count, offset) {
     gl.useProgram(program);
-    gl.drawArrays(mode, 0, count);
+    gl.drawArrays(mode, offset, count);
 }
 
 // Export all to module.exports
