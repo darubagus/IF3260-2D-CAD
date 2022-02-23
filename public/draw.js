@@ -29,7 +29,7 @@ const appendNewData = (gl,allData,type,vertex,color) => {
     } else if (type === HOLLOWSQUARE || type === HOLLOWRECTANGLE) {
         newData.primitive = gl.LINE_LOOP;
     } else if (type === RECTANGLE || type === SQUARE) {
-        newData.primitive = gl.TRIANGLES;
+        newData.primitive = gl.TRIANGLE_FAN;
     }
 
 
