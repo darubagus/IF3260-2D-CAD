@@ -1,8 +1,9 @@
 var buttonClicked = {
-    line : false,
-    square : false,
-    rectangle : false,
-    polygon : false
+    'btn-line' : false,
+    'btn-square' : false,
+    'btn-rectangle' : false,
+    'btn-polygon' : false,
+    'btn-mouse' : false
 };
 
 // Get the coordinate of the mouse click in the canvas
@@ -27,10 +28,11 @@ const convertMousePos = (canvas, evt) => {
 
 // Make all buttonClicked false
 const resetButtonClicked = () => {
-    buttonClicked.line = false;
-    buttonClicked.square = false;
-    buttonClicked.rectangle = false;
-    buttonClicked.polygon = false;
+    buttonClicked['btn-line'] = false;
+    buttonClicked['btn-square'] = false;
+    buttonClicked['btn-rectangle'] = false;
+    buttonClicked['btn-polygon'] = false;
+    buttonClicked['btn-mouse'] = false;
 };
 
 

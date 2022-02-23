@@ -14,7 +14,7 @@ canvas {
     height: 600px;
 }
 
-.toolbar {
+#toolbar {
     display: flex;
     flex-direction: row;
     justify-content: space-around;

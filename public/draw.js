@@ -19,18 +19,17 @@ const appendNewData = (gl,allData,type,vertex,color) => {
         color : color,
         vertexSize : 2,
         colorSize : 4,
-        start : 0
+        start : 0,
+        count : vertex.length / 2,
+        fixed : false
     };
 
     if (type === LINE) {
         newData.primitive = gl.LINES;
-        newData.count = 2;
     } else if (type === HOLLOWSQUARE || type === HOLLOWRECTANGLE) {
         newData.primitive = gl.LINE_LOOP;
-        newData.count = 4;
     } else if (type === RECTANGLE || type === SQUARE) {
         newData.primitive = gl.TRIANGLES;
-        newData.count = 6;
     }
 
 
