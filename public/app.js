@@ -30,6 +30,8 @@ var isDrawing = false;
 var drawPivotPoint = {x : 0, y : 0};
 var allData = [];
 
+let loadFileInput = null;
+
 // Resize canvas
 var width = canvas.clientWidth;
 var height = canvas.clientHeight;
@@ -98,8 +100,8 @@ document.getElementById('btn-load').addEventListener('click', () => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
     fileInput.style.display = 'none';
-    const readFile = (f) => {
-        const file = f.target.files[0];
+    const readFile = (e) => {
+        const file = e.target.files[0];
         if (!file) {
             document.body.removeChild(loadFileInput);
             loadFileInput = null;
@@ -109,8 +111,21 @@ document.getElementById('btn-load').addEventListener('click', () => {
         reader.onload = (e) => {
             const content = e.target.result;
             const data = JSON.parse(content);
+            console.log(data['data']);
+
+            document.body.removeChild(loadFileInput);
+            loadFileInput = null;
+
+            draw.appendNewData(gl,data['data'],type,vertex,color);
+
+            draw.render(data['data'], program, gl);
         }
+        reader.readAsText(file);
     }
+    fileInput.onchange = readFile;
+    document.body.appendChild(fileInput);
+    loadFileInput = fileInput;
+    fileInput.click();
 })
 
 // Add event listener to canvas onmousemove to draw
