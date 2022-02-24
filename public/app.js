@@ -14,6 +14,7 @@ import {choseButton,
     convertMousePos} from './toolbar.js';
 
 import * as draw from './draw.js';
+import { download } from './app-util.js';
 
 
 // Instantiate webgl
@@ -62,7 +63,7 @@ for (let buttonId in buttonClicked) {
 
 // Add event listener to canvas on mouse down
 canvas.addEventListener('mousedown', (evt) => {
-    // Check if button is clicked
+    // Check if button is clicked for drawing
     if (buttonClicked['btn-line'] || buttonClicked['btn-square'] || buttonClicked['btn-rectangle'] || buttonClicked['btn-polygon']) {
         isDrawing = true;
         drawPivotPoint = convertMousePos(canvas, evt);
@@ -78,6 +79,39 @@ canvas.addEventListener('mouseup', (evt) => {
         }
     }
 });
+
+/**
+ * Add event listener to saveButton
+ */
+document.getElementById('btn-save').addEventListener('click', () => {
+    const fileContent = {
+        createdAt: new Date(),
+        data: allData
+    }
+    download(JSON.stringify(fileContent), 'data.json', 'application/json');
+})
+
+/**
+ * Add event listener to loadButton
+ */
+document.getElementById('btn-load').addEventListener('click', () => {
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.style.display = 'none';
+    const readFile = (f) => {
+        const file = f.target.files[0];
+        if (!file) {
+            document.body.removeChild(loadFileInput);
+            loadFileInput = null;
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target.result;
+            const data = JSON.parse(content);
+        }
+    }
+})
 
 // Add event listener to canvas onmousemove to draw
 canvas.addEventListener('mousemove', (evt) => {
@@ -117,3 +151,7 @@ canvas.addEventListener('mousemove', (evt) => {
         draw.render(allData,program,gl);
     }
 });
+
+/**
+ * JSON to stringify allData
+ */
