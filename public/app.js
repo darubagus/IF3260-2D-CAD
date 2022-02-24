@@ -111,14 +111,29 @@ document.getElementById('btn-load').addEventListener('click', () => {
         reader.onload = (e) => {
             const content = e.target.result;
             const data = JSON.parse(content);
-            console.log(data['data']);
+            // console.log(data['data'][0].vertex);
 
             document.body.removeChild(loadFileInput);
             loadFileInput = null;
+            
+            for (let i = 0; i < data['data'].length; i++) {
+                let newData = {
+                    vertex: Object.values(data['data'][i].vertex),
+                    color: Object.values(data['data'][i].color),
+                    vertexSize : data['data'][i].vertexSize,
+                    colorSize : data['data'][i].colorSize,
+                    start : data['data'][i].start,
+                    count : data['data'][i].count,
+                    fixed : data['data'][i].fixed,
+                    primitive : data['data'][i].primitive
+                }
+                console.log(newData);
+                allData.push(newData);
+            }
 
-            draw.appendNewData(gl,data['data'],type,vertex,color);
+            console.log(allData);
 
-            draw.render(data['data'], program, gl);
+            draw.render(allData, program, gl);
         }
         reader.readAsText(file);
     }
@@ -164,6 +179,7 @@ canvas.addEventListener('mousemove', (evt) => {
 
         // render
         draw.render(allData,program,gl);
+        console.log(allData);
     }
 });
 
