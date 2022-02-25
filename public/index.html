@@ -34,6 +34,42 @@
 </head>
 <body>
 
+	<button type="button" class="collapsible">Guide/Help</button>
+	<div class="content">
+		<p>
+			Halo, selamat datang di tugas besar 1 Grafkom! <br><br>
+			App ini dibuat oleh:
+		</p>
+
+		<ol>
+			<li>Randy Zakya Suchrady - 13519061</li>
+			<li>Daru Bagus Dananjaya - 13519080</li>
+			<li>Thomas Ferdinand Martin - 13519099</li>
+		</ol>
+
+		<ul>
+			<li>
+				Untuk menggunakan fitur penggambaran (line, square, rectangle, polygon),
+				 silahkan pilih bentuk yang ingin dibuat, dapat dilihat di menu bagian bawah.
+			</li>
+			<li>
+				Untuk memilih warna, silahkan pilih warna yang ingin dibuat,
+				 dapat dilihat di menu bagian bawah (color picker).
+			</li>
+			<li>
+				Kalian dapat memilih opsi "fill" untuk menggambar objek yang solid
+			</li>
+			<li>
+				Kalian dapat save gambar yang telah dibuat dengan menekan tombol "save",
+				 file akan disimpan di direktori Downloads dalam bentuk json
+			</li>
+			<li>
+				Kalian dapat mengimport/load file json yang telah disimpan sebelumnya dengan menekan tombol "load",
+				 file akan langsung ditampilkan di layar
+			</li>
+		</ul>
+	</div>
+
 	<canvas id="canvas">
 
 	</canvas>
@@ -76,6 +112,23 @@
 
 	<!-- main app -->
 	<script type="module" src="./app.js"></script>
+
+	<script>
+		var coll = document.getElementsByClassName("collapsible");
+		var i;
+		
+		for (i = 0; i < coll.length; i++) {
+		  coll[i].addEventListener("click", function() {
+			this.classList.toggle("active");
+			var content = this.nextElementSibling;
+			if (content.style.display === "block") {
+			  content.style.display = "none";
+			} else {
+			  content.style.display = "block";
+			}
+		  });
+		}
+		</script>
 
 </body>
 </html>
