@@ -1,18 +1,11 @@
 // Import line.js webgl-utils.js toolbar.js
 import * as webglUtils from './webgl-utils.js';
-
-import {createLineVertex,
-    createLineColor} from './line.js';
-
-import {createHollowSquareVertex, createHollowSquareColor,
-createSolidSquareVertex, createSolidSquareColor} from './square.js';
-
-import {createHollowRectangleVertex, createHollowRectangleColor,} from './rectangle.js';
-
+import {createLineVertex, createLineColor} from './line.js';
+import {createSquareVertex, createSquareColor} from './square.js';
+import {createRectangleColor, createRectangleVertex,} from './rectangle.js';
 import {choseButton,
     buttonClicked,
     convertMousePos} from './toolbar.js';
-
 import * as draw from './draw.js';
 import { download } from './app-util.js';
 
@@ -26,10 +19,12 @@ if (!gl) {
     alert('WebGL not supported, please use a browser that support WebGL');
 }
 
+// Global variables
 var isDrawing = false;
+var isTransforming = false;
 var drawPivotPoint = {x : 0, y : 0};
 var allData = [];
-
+var selectedShape = {}
 let loadFileInput = null;
 
 // Resize canvas
@@ -75,14 +70,35 @@ canvas.addEventListener('mousedown', (evt) => {
     // Check if button is clicked for drawing
     if (buttonClicked['btn-line'] || buttonClicked['btn-square'] || buttonClicked['btn-rectangle'] || buttonClicked['btn-polygon']) {
         isDrawing = true;
+        isTransforming = false;
         drawPivotPoint = convertMousePos(canvas, evt);
+    } else if (buttonClicked['btn-mouse']) { // transforming state
+        let nearestShape = getNearestShape(evt)
+
+        // check if there is shape vertex around mouse pointer
+        if (nearestShape.objId !== -1) {
+            isTransforming = true;
+            isDrawing = false;
+            selectedShape = allData[nearestShape.objId];
+
+            // delete selected shape from allData
+            // console.log(selectedShape)
+            allData.splice(nearestShape.objId, 1);
+
+            // reset pivot
+            drawPivotPoint.x = selectedShape.vertex[nearestShape.pivotId.x];
+            drawPivotPoint.y = selectedShape.vertex[nearestShape.pivotId.y];
+        }
     }
 });
 
 // Add event listener to canvas on mouse up
 canvas.addEventListener('mouseup', (evt) => {
-    if (isDrawing) {
+    if (isDrawing || isTransforming) {
         isDrawing = false;
+        isTransforming = false;
+        selectedShape = {};
+
         if (allData.length > 0) {
             allData[allData.length - 1].fixed = true;
         }
@@ -133,7 +149,8 @@ document.getElementById('btn-load').addEventListener('click', () => {
                     start : data['data'][i].start,
                     count : data['data'][i].count,
                     fixed : data['data'][i].fixed,
-                    primitive : data['data'][i].primitive
+                    primitive : data['data'][i].primitive,
+                    type: data['data'][i].type,
                 }
                 allData.push(newData);
             }
@@ -150,12 +167,13 @@ document.getElementById('btn-load').addEventListener('click', () => {
 
 // Add event listener to canvas onmousemove to draw
 canvas.addEventListener('mousemove', (evt) => {
-    if (isDrawing) {
+    if (isDrawing || isTransforming) {
         let mousePos = convertMousePos(canvas, evt);
 
         let vertex;
         let color;
         let type;
+        let isFill;
 
         // Pop allData if allData is not empty
         if (allData.length > 0) {
@@ -163,20 +181,45 @@ canvas.addEventListener('mousemove', (evt) => {
                 allData.pop();
             }
         }
+
+        // solid state
+        if (isTransforming){
+            isFill = 
+            selectedShape.type == draw.RECTANGLE || 
+            selectedShape.type == draw.SQUARE
+        } else {
+            isFill = document.getElementById("check-fill").checked;
+        }
         
         // Check which button is clicked
-        if (buttonClicked['btn-line']) {
+        if (buttonClicked['btn-line'] || selectedShape.type == draw.LINE) {
             vertex = createLineVertex(drawPivotPoint.x, drawPivotPoint.y, mousePos.x, mousePos.y);
             color = createLineColor(0,0,0,1);
             type = draw.LINE;
-        }else if (buttonClicked['btn-square']) {
-            vertex = createHollowSquareVertex(drawPivotPoint.x, drawPivotPoint.y, mousePos.x, mousePos.y);
-            color = createHollowSquareColor(0,0,0,1);
-            type = draw.HOLLOWSQUARE;
-        }else if (buttonClicked['btn-rectangle']) {
-            vertex = createHollowRectangleVertex(drawPivotPoint.x, drawPivotPoint.y, mousePos.x, mousePos.y);
-            color = createHollowRectangleColor(0,0,0,1);
-            type = draw.HOLLOWRECTANGLE;
+        } else if (buttonClicked['btn-square'] 
+            || selectedShape.type == draw.SQUARE 
+            || selectedShape.type == draw.HOLLOWSQUARE) {
+            vertex = createSquareVertex(drawPivotPoint.x, drawPivotPoint.y, mousePos.x, mousePos.y);
+            color = createSquareColor(0,0,0,1);
+            
+            // check if hollow or solid
+            if (!isFill) {
+                type = draw.HOLLOWSQUARE;
+            } else {
+                type = draw.SQUARE;
+            }
+        } else if (buttonClicked['btn-rectangle'] 
+            || selectedShape.type == draw.RECTANGLE 
+            || selectedShape.type == draw.HOLLOWRECTANGLE) {
+            vertex = createRectangleVertex(drawPivotPoint.x, drawPivotPoint.y, mousePos.x, mousePos.y);
+            color = createRectangleColor(0,0,0,1);
+
+            // check if hollow or solid
+            if (!isFill) {
+                type = draw.HOLLOWRECTANGLE;
+            } else {
+                type = draw.RECTANGLE;
+            }
         }
 
         // Append the vertex and color to allData
@@ -187,6 +230,72 @@ canvas.addEventListener('mousemove', (evt) => {
     }
 });
 
+/*
+  Find nearest shape from mouse position
+*/
+const getNearestShape = (evt) => {
+    // tolerable  error
+    const error = 0.05;
+  
+    let smallestTemp = 999;
+    let selectedObj = -1;
+    // nearest point / vertex
+    let selectedVert = {
+      x: -1,
+      y: -1,
+    };
+    // new pivot
+    let pivotId = {};
+    pivotId.x = -1;
+    pivotId.y = -1;
+  
+    // search through newData array and get the object
+    for (let i = 0; i < allData.length; i++) {
+      let mousePos = convertMousePos(canvas, evt);
+      // iterate through all vertex of a shape with index i
+      for (let j = 0; j < allData[i].count; j++) {
+        // calculate the distance between mouse position and vertex (x,y)
+        let dist = Math.sqrt(
+          Math.pow(mousePos.x - allData[i].vertex[j * 2], 2) +
+            Math.pow(mousePos.y - allData[i].vertex[j * 2 + 1], 2)
+        );
+
+        if (dist < smallestTemp && dist < error) {
+          smallestTemp = dist;
+          selectedObj = i; // index of selected data of allData
+          selectedVert = { x: j * 2, y: j * 2 + 1 }; // index of selected vertex of allData[].vertex
+        }
+      }
+    }
+  
+    // check if exist shape near mouse pointer
+    if (selectedObj !== -1) {
+    //   document.getElementById("canvas").style.cursor = "nesw-resize";
+        // set new pivot
+        if (allData[selectedObj].type == "LINE") {
+            if (selectedVert.x == 0) pivotId = { x: 2, y: 3 };
+            else pivotId = { x: 0, y: 1 };
+        } else {
+            // rect or square
+            for (let i = 0; i < allData[selectedObj].count; i++) {
+                if(allData[selectedObj].vertex[i * 2] !== allData[selectedObj].vertex[selectedVert.x]  
+                    && allData[selectedObj].vertex[i * 2 + 1] !== allData[selectedObj].vertex[selectedVert.y]) 
+                    {
+                        pivotId.x = i * 2;
+                        pivotId.y = i * 2 + 1;
+                        break;
+                }
+            }
+        }
+    }
+  
+    return {
+      objId: selectedObj,
+      position: selectedVert,
+      pivotId,
+    };
+  };
+  
 /**
  * JSON to stringify allData
  */

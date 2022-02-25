@@ -21,7 +21,8 @@ const appendNewData = (gl,allData,type,vertex,color) => {
         colorSize : 4,
         start : 0,
         count : vertex.length / 2,
-        fixed : false
+        fixed : false,
+        type: type
     };
 
     if (type === LINE) {

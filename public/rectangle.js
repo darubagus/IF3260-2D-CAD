@@ -1,5 +1,5 @@
 // Function to create webgl vertex to create 2d hollow rectangle from 4 lines
-function createHollowRectangleVertex(x1, y1, x2, y2) {
+function createRectangleVertex(x1, y1, x2, y2) {
     // x1,y1 : start point
     // x2,y2 : end point
 
@@ -15,7 +15,7 @@ function createHollowRectangleVertex(x1, y1, x2, y2) {
 }
 
 // Function to create webgl color to create 2d hollow rectangle from 4 lines
-function createHollowRectangleColor(r, g, b, a) {
+function createRectangleColor(r, g, b, a) {
     // r,g,b,a : color
     let color = new Float32Array([
         r, g, b, a,
@@ -28,4 +28,4 @@ function createHollowRectangleColor(r, g, b, a) {
 
 }
 
-export { createHollowRectangleVertex, createHollowRectangleColor };
+export { createRectangleVertex, createRectangleColor };

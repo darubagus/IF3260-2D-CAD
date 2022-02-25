@@ -23,3 +23,9 @@ canvas {
     height: 50px;
     background-color: #1d1d1d;
 }
+
+#fill-label {
+    /* color: white; */
+    background-color: white;
+    padding: 2px;
+}
