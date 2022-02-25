@@ -111,15 +111,16 @@ document.getElementById('btn-load').addEventListener('click', () => {
         reader.onload = (e) => {
             const content = e.target.result;
             const data = JSON.parse(content);
-            // console.log(data['data'][0].vertex);
 
             document.body.removeChild(loadFileInput);
             loadFileInput = null;
+
+            allData = [];
             
             for (let i = 0; i < data['data'].length; i++) {
                 let newData = {
-                    vertex: Object.values(data['data'][i].vertex),
-                    color: Object.values(data['data'][i].color),
+                    vertex: new Float32Array(Object.values(data['data'][i].vertex)),
+                    color: new Float32Array(Object.values(data['data'][i].color)),
                     vertexSize : data['data'][i].vertexSize,
                     colorSize : data['data'][i].colorSize,
                     start : data['data'][i].start,
@@ -127,11 +128,8 @@ document.getElementById('btn-load').addEventListener('click', () => {
                     fixed : data['data'][i].fixed,
                     primitive : data['data'][i].primitive
                 }
-                console.log(newData);
                 allData.push(newData);
             }
-
-            console.log(allData);
 
             draw.render(allData, program, gl);
         }
@@ -179,7 +177,6 @@ canvas.addEventListener('mousemove', (evt) => {
 
         // render
         draw.render(allData,program,gl);
-        console.log(allData);
     }
 });
 
