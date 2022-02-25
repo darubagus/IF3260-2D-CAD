@@ -63,6 +63,13 @@ for (let buttonId in buttonClicked) {
     });
 }
 
+// Add event listener to btn-clear to do gl.clear
+let btnClear = document.getElementById('btn-clear');
+btnClear.addEventListener('click', () => {
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    allData = [];
+});
+
 // Add event listener to canvas on mouse down
 canvas.addEventListener('mousedown', (evt) => {
     // Check if button is clicked for drawing
