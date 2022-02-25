@@ -45,8 +45,24 @@ const choseButton = (buttonId) => {
     buttonClicked[buttonId] = true;
 };
 
+const getColor = () => {
+    let colorValue = document.getElementById('color-picker').value;
+    // Change hex color to r g b
+    let hexColor = colorValue.replace('#', '');
+    let r = parseInt(hexColor.substring(0, 2), 16);
+    let g = parseInt(hexColor.substring(2, 4), 16);
+    let b = parseInt(hexColor.substring(4, 6), 16);
+    // Change color value to vec4
+    return {
+        r: r / 255,
+        g: g / 255,
+        b: b / 255,
+    };
+}
+
 export {
     choseButton,
     buttonClicked,
-    convertMousePos
+    convertMousePos,
+    getColor,
 };

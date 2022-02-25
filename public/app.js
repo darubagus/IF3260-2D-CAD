@@ -5,7 +5,8 @@ import {createSquareVertex, createSquareColor} from './square.js';
 import {createRectangleColor, createRectangleVertex,} from './rectangle.js';
 import {choseButton,
     buttonClicked,
-    convertMousePos} from './toolbar.js';
+    convertMousePos,
+    getColor} from './toolbar.js';
 import * as draw from './draw.js';
 import { download } from './app-util.js';
 
@@ -26,6 +27,7 @@ var drawPivotPoint = {x : 0, y : 0};
 var allData = [];
 var selectedShape = {}
 let loadFileInput = null;
+var colorPicker = getColor();
 
 // Resize canvas
 var width = canvas.clientWidth;
@@ -57,6 +59,21 @@ for (let buttonId in buttonClicked) {
         choseButton(buttonId);
     });
 }
+
+// Change cursor type to corsshair when entering the canvas and back to default when leaving
+canvas.addEventListener('mouseenter', () => {
+    document.getElementById("canvas").style.cursor = "crosshair";
+});
+canvas.addEventListener('mouseleave', () => {
+    canvas.style.cursor = 'default';
+});
+
+
+
+// Add event listener to color picker to change color value
+document.getElementById('color-picker').addEventListener('change', () => {
+    colorPicker = getColor();
+});
 
 // Add event listener to btn-clear to do gl.clear
 let btnClear = document.getElementById('btn-clear');
@@ -194,13 +211,13 @@ canvas.addEventListener('mousemove', (evt) => {
         // Check which button is clicked
         if (buttonClicked['btn-line'] || selectedShape.type == draw.LINE) {
             vertex = createLineVertex(drawPivotPoint.x, drawPivotPoint.y, mousePos.x, mousePos.y);
-            color = createLineColor(0,0,0,1);
+            color = createLineColor(colorPicker.r,colorPicker.g,colorPicker.b,1);
             type = draw.LINE;
         } else if (buttonClicked['btn-square'] 
             || selectedShape.type == draw.SQUARE 
             || selectedShape.type == draw.HOLLOWSQUARE) {
             vertex = createSquareVertex(drawPivotPoint.x, drawPivotPoint.y, mousePos.x, mousePos.y);
-            color = createSquareColor(0,0,0,1);
+            color = createSquareColor(colorPicker.r,colorPicker.g,colorPicker.b,1);
             
             // check if hollow or solid
             if (!isFill) {
@@ -212,7 +229,7 @@ canvas.addEventListener('mousemove', (evt) => {
             || selectedShape.type == draw.RECTANGLE 
             || selectedShape.type == draw.HOLLOWRECTANGLE) {
             vertex = createRectangleVertex(drawPivotPoint.x, drawPivotPoint.y, mousePos.x, mousePos.y);
-            color = createRectangleColor(0,0,0,1);
+            color = createRectangleColor(colorPicker.r,colorPicker.g,colorPicker.b,1);
 
             // check if hollow or solid
             if (!isFill) {

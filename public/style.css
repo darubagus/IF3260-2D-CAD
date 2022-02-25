@@ -10,8 +10,8 @@ body {
 /* canvas background color white and centered and 800x600 size*/
 canvas {
     background-color: #FFFFFF;
-    width: 600px;
-    height: 600px;
+    width: 500px;
+    height: 500px;
 }
 
 .toolbar {
@@ -19,7 +19,7 @@ canvas {
     flex-direction: row;
     justify-content: space-around;
     align-items: center;
-    width: 600px;
+    width: 500px;
     height: 50px;
     background-color: #1d1d1d;
 }
