@@ -8,7 +8,7 @@ import {choseButton,
     convertMousePos,
     getColor} from './toolbar.js';
 import * as draw from './draw.js';
-import { download } from './app-util.js';
+import { download, findNearestPoint } from './app-util.js';
 
 
 // Instantiate webgl
@@ -23,11 +23,13 @@ if (!gl) {
 // Global variables
 var isDrawing = false;
 var isTransforming = false;
+var isMoving = false;
 var drawPivotPoint = {x : 0, y : 0};
 var allData = [];
 var selectedShape = {}
 let loadFileInput = null;
 var colorPicker = getColor();
+var pivotVertex = {};
 
 // Resize canvas
 var width = canvas.clientWidth;
@@ -42,15 +44,19 @@ gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 // Get vertex shader and fragment shader source from html
 let vertexShaderSource = document.getElementById('vertex-shader').text;
 let fragmentShaderSource = document.getElementById('fragment-shader').text;
+let vertexPointShaderSource = document.getElementById('point-vertex-shader').text;
+let fragmentPointShaderSource = document.getElementById('fragment-shader').text;
 
 // Create vertex shader
 let vertexShader = webglUtils.createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-
+let pointVertexShader = webglUtils.createShader(gl, gl.VERTEX_SHADER, vertexPointShaderSource);
 // Create fragment shader
 let fragmentShader = webglUtils.createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+let pointFragmentShader = webglUtils.createShader(gl, gl.FRAGMENT_SHADER, fragmentPointShaderSource);
 
 // Create program
 let program = webglUtils.createProgram(gl, vertexShader, fragmentShader);
+let progamPoint = webglUtils.createProgram(gl, pointVertexShader, pointFragmentShader);
 
 // Iterate all toolbar button and add event listene to choseButton
 for (let buttonId in buttonClicked) {
@@ -99,12 +105,22 @@ canvas.addEventListener('mousedown', (evt) => {
             selectedShape = allData[nearestShape.objId];
 
             // delete selected shape from allData
-            // console.log(selectedShape)
             allData.splice(nearestShape.objId, 1);
 
             // reset pivot
             drawPivotPoint.x = selectedShape.vertex[nearestShape.pivotId.x];
             drawPivotPoint.y = selectedShape.vertex[nearestShape.pivotId.y];
+        }
+    } else if (buttonClicked['btn-move']){
+        // get shape index
+        let objId = moveObject(evt).objId
+        if (objId !== -1){
+            isMoving = true;
+            isTransforming = false;
+            isDrawing = false;
+
+            selectedShape.objId = objId;
+            allData[objId].fixed = false;
         }
     }
 });
@@ -119,6 +135,10 @@ canvas.addEventListener('mouseup', (evt) => {
         if (allData.length > 0) {
             allData[allData.length - 1].fixed = true;
         }
+    } else if (isMoving){
+        isMoving = false;
+        if (allData.length > 0) allData[selectedShape.objId].fixed = true;
+        selectedShape = {};
     }
 });
 
@@ -239,11 +259,38 @@ canvas.addEventListener('mousemove', (evt) => {
             }
         }
 
+        // if transforming then don't use color picker
+        if (isTransforming) color = selectedShape.color;            
+        
         // Append the vertex and color to allData
         draw.appendNewData(gl,allData,type,vertex,color);
 
         // render
         draw.render(allData,program,gl);
+    
+        if (isTransforming) draw.renderPoint(allData[allData.length - 1].vertex, progamPoint, gl);
+    } else if (isMoving){
+        let newPos = convertMousePos(canvas, evt);
+        let deltaX = newPos.x - pivotVertex.x;
+        let deltaY = newPos.y - pivotVertex.y;
+
+        // update origin
+        pivotVertex.x = newPos.x;
+        pivotVertex.y = newPos.y;
+        
+        // update vertex
+        let vertex = allData[selectedShape.objId].vertex;
+
+        for (let i = 0; i < allData[selectedShape.objId].count; i++){
+            vertex[i*2] += deltaX; 
+            vertex[i*2 + 1] += deltaY
+        }
+
+        allData[selectedShape.objId].vertex = vertex;
+        
+        // render
+        draw.render(allData,program,gl);
+        draw.renderPoint(allData[selectedShape.objId].vertex, progamPoint, gl);
     }
 });
 
@@ -253,38 +300,18 @@ canvas.addEventListener('mousemove', (evt) => {
 const getNearestShape = (evt) => {
     // tolerable  error
     const error = 0.05;
-  
-    let smallestTemp = 999;
-    let selectedObj = -1;
-    // nearest point / vertex
-    let selectedVert = {
-      x: -1,
-      y: -1,
-    };
+    let objColor;
+
     // new pivot
     let pivotId = {};
     pivotId.x = -1;
     pivotId.y = -1;
   
-    // search through newData array and get the object
-    for (let i = 0; i < allData.length; i++) {
-      let mousePos = convertMousePos(canvas, evt);
-      // iterate through all vertex of a shape with index i
-      for (let j = 0; j < allData[i].count; j++) {
-        // calculate the distance between mouse position and vertex (x,y)
-        let dist = Math.sqrt(
-          Math.pow(mousePos.x - allData[i].vertex[j * 2], 2) +
-            Math.pow(mousePos.y - allData[i].vertex[j * 2 + 1], 2)
-        );
+    let mousePos = convertMousePos(canvas, evt);
 
-        if (dist < smallestTemp && dist < error) {
-          smallestTemp = dist;
-          selectedObj = i; // index of selected data of allData
-          selectedVert = { x: j * 2, y: j * 2 + 1 }; // index of selected vertex of allData[].vertex
-        }
-      }
-    }
-  
+    let {selectedObj, selectedVert} = findNearestPoint(mousePos, error, allData)
+    let vertex;
+
     // check if exist shape near mouse pointer
     if (selectedObj !== -1) {
     //   document.getElementById("canvas").style.cursor = "nesw-resize";
@@ -304,15 +331,35 @@ const getNearestShape = (evt) => {
                 }
             }
         }
+        vertex = allData[selectedObj].vertex;
     }
   
     return {
-      objId: selectedObj,
-      position: selectedVert,
-      pivotId,
+        objId: selectedObj,
+        position: selectedVert,
+        pivotId,
+        objColor,
+        vertex
     };
-  };
+};
   
+/*
+    Function to find the pivot point for moving object
+*/
+const moveObject = (evt) => {
+    let nearestShape = getNearestShape(evt);
+
+    if (nearestShape.objId !== -1) {
+        // move the object
+        let {x, y} = nearestShape.position;
+        pivotVertex.x = allData[nearestShape.objId].vertex[x]
+        pivotVertex.y = allData[nearestShape.objId].vertex[y]
+    }
+
+    return {
+        objId: nearestShape.objId
+    }
+}
 /**
  * JSON to stringify allData
  */

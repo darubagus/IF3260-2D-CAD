@@ -67,4 +67,16 @@ const render = (allData,program,gl) => {
     
 }
 
-export {render, appendNewData, LINE, HOLLOWSQUARE, HOLLOWRECTANGLE, RECTANGLE, SQUARE};
+const renderPoint = (vertexArray,program,gl) => {
+    // gl.clear(gl.COLOR_BUFFER_BIT);
+    // Create vertex and color buffer
+    let vertexBuffer = webglUtils.createBuffer(gl,vertexArray);
+
+    // Enable vertex and color attribute
+    webglUtils.enableAttribute(gl,program,vertexBuffer,'a_position',2,gl.FLOAT,false,0,0);
+    // Draws
+    console.log(vertexArray.length);
+    webglUtils.drawArrays(gl,program, gl.POINTS, vertexArray.length/2, 0);
+}
+
+export {render, renderPoint, appendNewData, LINE, HOLLOWSQUARE, HOLLOWRECTANGLE, RECTANGLE, SQUARE};

@@ -19,6 +19,20 @@
 		}
 	</script>
 
+	<!-- simple vertex shader script for making line -->
+	<script id="point-vertex-shader" type="x-shader/x-vertex">
+		precision mediump float;
+
+		attribute vec3 a_position;
+		varying vec3 vColor;
+
+		void main() {
+			vColor = vec3(0.114, 0.514, 0.831);
+			gl_Position = vec4(a_position,1);
+			gl_PointSize = 5.0;
+		}
+	</script>
+
 	<!-- simple fragment shader script for making black line -->
 	<script id="fragment-shader" type="x-shader/x-fragment">
 		precision mediump float;
@@ -91,7 +105,10 @@
 			<button class="toolbar-button" id="btn-polygon">Polygon</button>
 		</div>
 		<div class="toolbar-item">
-			<button class="toolbar-button" id="btn-mouse">Mouse</button>
+			<button class="toolbar-button" id="btn-mouse">Transform</button>
+		</div>
+		<div class="toolbar-item">
+			<button class="toolbar-button" id="btn-move">Move</button>
 		</div>
 	</div>
 	<div class="toolbar">

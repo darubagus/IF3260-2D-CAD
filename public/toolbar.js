@@ -5,7 +5,8 @@ var buttonClicked = {
     'btn-polygon' : false,
     'btn-mouse' : false,
     'btn-save' : false,
-    'btn-load' : false
+    'btn-load' : false,
+    'btn-move' : false
 };
 
 // Get the coordinate of the mouse click in the canvas
@@ -37,6 +38,7 @@ const resetButtonClicked = () => {
     buttonClicked['btn-mouse'] = false;
     buttonClicked['btn-save'] = false;
     buttonClicked['btn-load'] = false;
+    buttonClicked['btn-move'] = false;
 };
 
 
