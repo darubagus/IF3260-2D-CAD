@@ -9,6 +9,7 @@ import {choseButton,
     getColor} from './toolbar.js';
 import * as draw from './draw.js';
 import { download, findNearestPoint } from './app-util.js';
+import { createPolygonGuideLineVertex, createPolygonGuideLineColor } from './polygon.js';
 
 
 // Instantiate webgl
@@ -30,6 +31,14 @@ var selectedShape = {}
 let loadFileInput = null;
 var colorPicker = getColor();
 var pivotVertex = {};
+var currentPolygon = {
+    x : [],
+    y : [],
+    r : 0,
+    g : 0,
+    b : 0,
+    isDrawing : false
+};
 
 // Resize canvas
 var width = canvas.clientWidth;
@@ -91,7 +100,7 @@ btnClear.addEventListener('click', () => {
 // Add event listener to canvas on mouse down
 canvas.addEventListener('mousedown', (evt) => {
     // Check if button is clicked for drawing
-    if (buttonClicked['btn-line'] || buttonClicked['btn-square'] || buttonClicked['btn-rectangle'] || buttonClicked['btn-polygon']) {
+    if (buttonClicked['btn-line'] || buttonClicked['btn-square'] || buttonClicked['btn-rectangle']) {
         isDrawing = true;
         isTransforming = false;
         drawPivotPoint = convertMousePos(canvas, evt);
@@ -127,18 +136,20 @@ canvas.addEventListener('mousedown', (evt) => {
 
 // Add event listener to canvas on mouse up
 canvas.addEventListener('mouseup', (evt) => {
-    if (isDrawing || isTransforming) {
-        isDrawing = false;
-        isTransforming = false;
-        selectedShape = {};
-
-        if (allData.length > 0) {
-            allData[allData.length - 1].fixed = true;
+    if (!buttonClicked['btn-polygon']) {
+        if (isDrawing || isTransforming) {
+            isDrawing = false;
+            isTransforming = false;
+            selectedShape = {};
+    
+            if (allData.length > 0) {
+                allData[allData.length - 1].fixed = true;
+            }
+        } else if (isMoving){
+            isMoving = false;
+            if (allData.length > 0) allData[selectedShape.objId].fixed = true;
+            selectedShape = {};
         }
-    } else if (isMoving){
-        isMoving = false;
-        if (allData.length > 0) allData[selectedShape.objId].fixed = true;
-        selectedShape = {};
     }
 });
 
@@ -257,6 +268,16 @@ canvas.addEventListener('mousemove', (evt) => {
             } else {
                 type = draw.RECTANGLE;
             }
+        } else if (buttonClicked['btn-polygon']) {
+            if (currentPolygon.isDrawing) {
+                currentPolygon.x.push(mousePos.x);
+                currentPolygon.y.push(mousePos.y);
+                vertex = createPolygonGuideLineVertex(currentPolygon.x, currentPolygon.y);
+                color = createPolygonGuideLineColor(currentPolygon.x.length,currentPolygon.r,currentPolygon.g,currentPolygon.b,1);
+                currentPolygon.x.pop();
+                currentPolygon.y.pop();
+                type = draw.POLYGON_GUIDELINE;
+            }
         }
 
         // if transforming then don't use color picker
@@ -291,6 +312,76 @@ canvas.addEventListener('mousemove', (evt) => {
         // render
         draw.render(allData,program,gl);
         draw.renderPoint(allData[selectedShape.objId].vertex, progamPoint, gl);
+    }
+});
+
+// Polygon guideline
+canvas.addEventListener('click', (evt) => {
+    // Check if is drawing and the button clicked is polygon
+    if (buttonClicked['btn-polygon']) {
+        if (!isDrawing) {
+            isDrawing = true;
+        }
+        // check if current polygon is drawn or not
+        if (!currentPolygon.isDrawing) {
+            currentPolygon.r = colorPicker.r;
+            currentPolygon.g = colorPicker.g;
+            currentPolygon.b = colorPicker.b;
+            currentPolygon.isDrawing = true;
+        } else {
+            allData.pop();
+        }
+        
+        let mousePos = convertMousePos(canvas, evt);
+        currentPolygon.x.push(mousePos.x);
+        currentPolygon.y.push(mousePos.y);
+        // create the vertex and the color data
+        let vertex = createPolygonGuideLineVertex(currentPolygon.x, currentPolygon.y);
+        let color = createPolygonGuideLineColor(currentPolygon.x.length,currentPolygon.r, currentPolygon.g, currentPolygon.b, 1);
+        
+        // append the vertex and color data to allData
+        draw.appendNewData(gl,allData,draw.POLYGON_GUIDELINE,vertex,color);
+    }
+});
+
+window.addEventListener('keydown', (evt) => {
+    if (evt.code !== 'Space') {
+        return;
+    }
+    if (buttonClicked['btn-polygon']) {
+        if (isDrawing) {
+            isDrawing = false;
+        }
+
+        if (currentPolygon.isDrawing) {
+            let isFill = document.getElementById("check-fill").checked;
+            currentPolygon.isDrawing = false;
+            allData.pop();
+
+            // create the vertex and the color data
+            let vertex = createPolygonGuideLineVertex(currentPolygon.x, currentPolygon.y);
+            let color = createPolygonGuideLineColor(currentPolygon.x.length,currentPolygon.r, currentPolygon.g, currentPolygon.b, 1);
+
+            let type = draw.HOLLOWPOLYGON;
+            if (isFill) {
+                type = draw.POLYGON;
+            }
+            // append the vertex and color data to allData
+            draw.appendNewData(gl,allData,type,vertex,color);
+
+            // set the last element of alldata fixed become true
+            allData[allData.length - 1].fixed = true;
+
+            // render
+            draw.render(allData,program,gl);
+
+            // set back currentPolygon to default
+            currentPolygon.x = [];
+            currentPolygon.y = [];
+            currentPolygon.r = 0;
+            currentPolygon.g = 0;
+            currentPolygon.b = 0;
+        }
     }
 });
 

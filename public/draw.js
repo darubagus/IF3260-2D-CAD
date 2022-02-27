@@ -6,6 +6,9 @@ const HOLLOWSQUARE = 'HOLLOWSQUARE';
 const HOLLOWRECTANGLE = 'HOLLOWRECTANGLE';
 const RECTANGLE = 'RECTANGLE';
 const SQUARE = 'SQUARE';
+const POLYGON_GUIDELINE = 'POLYGON_GUIDELINE';
+const HOLLOWPOLYGON = 'HOLLOWPOLYGON';
+const POLYGON = 'POLYGON';
 
 const appendNewData = (gl,allData,type,vertex,color) => {
     let start = 0;
@@ -27,13 +30,13 @@ const appendNewData = (gl,allData,type,vertex,color) => {
 
     if (type === LINE) {
         newData.primitive = gl.LINES;
-    } else if (type === HOLLOWSQUARE || type === HOLLOWRECTANGLE) {
+    } else if (type === HOLLOWSQUARE || type === HOLLOWRECTANGLE || type === HOLLOWPOLYGON) {
         newData.primitive = gl.LINE_LOOP;
-    } else if (type === RECTANGLE || type === SQUARE) {
+    } else if (type === RECTANGLE || type === SQUARE || type === POLYGON) {
         newData.primitive = gl.TRIANGLE_FAN;
+    } else if (type === POLYGON_GUIDELINE) {
+        newData.primitive = gl.LINE_STRIP;
     }
-
-
 
     allData.push(newData);
 }
@@ -68,7 +71,7 @@ const render = (allData,program,gl) => {
 }
 
 const renderPoint = (vertexArray,program,gl) => {
-    // gl.clear(gl.COLOR_BUFFER_BIT);
+
     // Create vertex and color buffer
     let vertexBuffer = webglUtils.createBuffer(gl,vertexArray);
 
@@ -79,4 +82,7 @@ const renderPoint = (vertexArray,program,gl) => {
     webglUtils.drawArrays(gl,program, gl.POINTS, vertexArray.length/2, 0);
 }
 
-export {render, renderPoint, appendNewData, LINE, HOLLOWSQUARE, HOLLOWRECTANGLE, RECTANGLE, SQUARE};
+export {render, renderPoint, appendNewData,
+    LINE, HOLLOWSQUARE, HOLLOWRECTANGLE,
+    RECTANGLE, SQUARE, POLYGON_GUIDELINE,
+    HOLLOWPOLYGON, POLYGON};
