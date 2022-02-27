@@ -78,7 +78,6 @@ const renderPoint = (vertexArray,program,gl) => {
     // Enable vertex and color attribute
     webglUtils.enableAttribute(gl,program,vertexBuffer,'a_position',2,gl.FLOAT,false,0,0);
     // Draws
-    console.log(vertexArray.length);
     webglUtils.drawArrays(gl,program, gl.POINTS, vertexArray.length/2, 0);
 }
 
