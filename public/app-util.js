@@ -49,3 +49,22 @@ export function findNearestPoint (mousePos, error, allData) {
 
   return { selectedObj, selectedVert };
 }
+
+export function findAnchorPoint(vertexArray) {
+  let anchor = {};
+  anchor.x = 0;
+  anchor.y = 0;
+  let sumX = 0;
+  let sumY = 0;
+  let n = vertexArray.length/2;
+
+  for (let i = 0; i < n; i++){
+    sumX += vertexArray[i*2];
+    sumY += vertexArray[i*2 + 1];
+  }
+
+  anchor.x = (1.000 * sumX) / n;
+  anchor.y = (1.000 * sumY) / n;
+
+  return anchor;
+}

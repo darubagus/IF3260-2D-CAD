@@ -8,7 +8,7 @@ import {choseButton,
     convertMousePos,
     getColor} from './toolbar.js';
 import * as draw from './draw.js';
-import { download, findNearestPoint } from './app-util.js';
+import { download, findNearestPoint, findAnchorPoint } from './app-util.js';
 import { createPolygonGuideLineVertex, createPolygonGuideLineColor } from './polygon.js';
 
 
@@ -25,6 +25,7 @@ if (!gl) {
 var isDrawing = false;
 var isTransforming = false;
 var isMoving = false;
+let polygonID = -1;
 var drawPivotPoint = {x : 0, y : 0};
 var allData = [];
 var selectedShape = {}
@@ -39,7 +40,8 @@ var currentPolygon = {
     b : 0,
     isDrawing : false
 };
-
+let isTransformingPolygon = false;
+let anchor = {}
 // Resize canvas
 var width = canvas.clientWidth;
 var height = canvas.clientHeight;
@@ -113,12 +115,23 @@ canvas.addEventListener('mousedown', (evt) => {
             isDrawing = false;
             selectedShape = allData[nearestShape.objId];
 
+            isTransformingPolygon = 
+            (selectedShape.type == draw.POLYGON) || 
+            (selectedShape.type == draw.HOLLOWPOLYGON);
             // delete selected shape from allData
-            allData.splice(nearestShape.objId, 1);
 
-            // reset pivot
-            drawPivotPoint.x = selectedShape.vertex[nearestShape.pivotId.x];
-            drawPivotPoint.y = selectedShape.vertex[nearestShape.pivotId.y];
+            // reset pivo
+            if (!isTransformingPolygon){
+                allData.splice(nearestShape.objId, 1);
+                drawPivotPoint.x = selectedShape.vertex[nearestShape.pivotId.x];
+                drawPivotPoint.y = selectedShape.vertex[nearestShape.pivotId.y];
+            } else {
+                polygonID = nearestShape.objId;
+                anchor = findAnchorPoint(selectedShape.vertex);
+
+                pivotVertex.x = nearestShape.selectedPoint.x;
+                pivotVertex.y = nearestShape.selectedPoint.y;
+            }
         }
     } else if (buttonClicked['btn-move']){
         // get shape index
@@ -137,11 +150,11 @@ canvas.addEventListener('mousedown', (evt) => {
 // Add event listener to canvas on mouse up
 canvas.addEventListener('mouseup', (evt) => {
     if (!buttonClicked['btn-polygon']) {
-        if (isDrawing || isTransforming) {
+        if (isDrawing || isTransforming && !isTransformingPolygon) {
             isDrawing = false;
             isTransforming = false;
             selectedShape = {};
-    
+
             if (allData.length > 0) {
                 allData[allData.length - 1].fixed = true;
             }
@@ -149,6 +162,13 @@ canvas.addEventListener('mouseup', (evt) => {
             isMoving = false;
             if (allData.length > 0) allData[selectedShape.objId].fixed = true;
             selectedShape = {};
+        } else if (isTransformingPolygon) {
+            isTransformingPolygon = false;
+            isTransforming = false;
+            anchor = {};
+            selectedShape = {};
+            pivotVertex = {};
+            polygonID = -1;
         }
     }
 });
@@ -224,7 +244,7 @@ canvas.addEventListener('mousemove', (evt) => {
         let isFill;
 
         // Pop allData if allData is not empty
-        if (allData.length > 0) {
+        if (allData.length > 0 && !isTransformingPolygon) {
             if (!allData[allData.length - 1].fixed) {
                 allData.pop();
             }
@@ -234,7 +254,8 @@ canvas.addEventListener('mousemove', (evt) => {
         if (isTransforming){
             isFill = 
             selectedShape.type == draw.RECTANGLE || 
-            selectedShape.type == draw.SQUARE
+            selectedShape.type == draw.SQUARE ||
+            selectedShape.type == draw.POLYGON
         } else {
             isFill = document.getElementById("check-fill").checked;
         }
@@ -278,18 +299,71 @@ canvas.addEventListener('mousemove', (evt) => {
                 currentPolygon.y.pop();
                 type = draw.POLYGON_GUIDELINE;
             }
+        } else if (isTransformingPolygon) {
+            let newPos = convertMousePos(canvas, evt);
+
+            // find nearest point from mouse position in line with vertex
+            let maskedVertex = selectedShape.vertex;
+            for (let i = 0; i < selectedShape.count; i++){
+                maskedVertex[i*2] -= anchor.x;
+                maskedVertex[i*2 + 1] -= anchor.y;
+            }
+            // masked the pivot
+            let maskedPivotX = pivotVertex.x - anchor.x;
+            let maskedPivotY = pivotVertex.y - anchor.y;
+
+            // set new pivot
+            pivotVertex.x = newPos.x;
+            pivotVertex.y = newPos.y;
+
+            // masked mouse position
+            let maskedMouseX = mousePos.x - anchor.x;
+            let maskedMouseY = mousePos.y - anchor.y;
+            let scale = 1;
+
+            // find slope
+            if (maskedPivotX != 0 && maskedPivotY != 0){
+                let slope = 1.000*maskedPivotY/maskedPivotX
+                let xCross = (-maskedMouseX - slope*maskedMouseY)/(1 + Math.pow(slope, 2));
+                scale = xCross / maskedPivotX;
+            } else if (maskedPivotX == 0 && maskedPivotY == 0) {
+                scale = 1;
+            } else if (maskedPivotX == 0) {
+                scale = maskedMouseY / maskedPivotY;
+            } else if (maskedPivotY == 0) {
+                scale = maskedMouseX / maskedPivotX;
+            }
+
+            if (scale == 0) scale = 1; // in case scalenya malah 0 
+            scale = Math.abs(scale); // make it positive
+
+            // update all vertex
+            for (let i = 0; i < selectedShape.count; i++){
+                maskedVertex[i*2] = maskedVertex[i*2] * scale + anchor.x;
+                maskedVertex[i*2 + 1] = maskedVertex[i*2 + 1] * scale + anchor.y;
+            }
+
+            // change vertex
+            allData[polygonID].vertex = maskedVertex;
         }
 
         // if transforming then don't use color picker
         if (isTransforming) color = selectedShape.color;            
-        
         // Append the vertex and color to allData
-        draw.appendNewData(gl,allData,type,vertex,color);
+        if (!isTransformingPolygon) {
+            draw.appendNewData(gl,allData,type,vertex,color);
+        }
 
         // render
         draw.render(allData,program,gl);
     
-        if (isTransforming) draw.renderPoint(allData[allData.length - 1].vertex, progamPoint, gl);
+        if (isTransforming) {
+            if (!isTransformingPolygon){
+                draw.renderPoint(allData[allData.length - 1].vertex, progamPoint, gl);
+            } else {
+                draw.renderPoint(allData[polygonID].vertex, progamPoint, gl);
+            }
+        }
     } else if (isMoving){
         let newPos = convertMousePos(canvas, evt);
         let deltaX = newPos.x - pivotVertex.x;
@@ -311,6 +385,7 @@ canvas.addEventListener('mousemove', (evt) => {
         
         // render
         draw.render(allData,program,gl);
+
         draw.renderPoint(allData[selectedShape.objId].vertex, progamPoint, gl);
     }
 });
@@ -402,6 +477,7 @@ const getNearestShape = (evt) => {
 
     let {selectedObj, selectedVert} = findNearestPoint(mousePos, error, allData)
     let vertex;
+    let selectedPoint;
 
     // check if exist shape near mouse pointer
     if (selectedObj !== -1) {
@@ -423,6 +499,10 @@ const getNearestShape = (evt) => {
             }
         }
         vertex = allData[selectedObj].vertex;
+        selectedPoint = {
+            x: allData[selectedObj].vertex[selectedVert.x],
+            y: allData[selectedObj].vertex[selectedVert.y]
+        }
     }
   
     return {
@@ -430,7 +510,8 @@ const getNearestShape = (evt) => {
         position: selectedVert,
         pivotId,
         objColor,
-        vertex
+        vertex,
+        selectedPoint
     };
 };
   
@@ -441,16 +522,12 @@ const moveObject = (evt) => {
     let nearestShape = getNearestShape(evt);
 
     if (nearestShape.objId !== -1) {
-        // move the object
-        let {x, y} = nearestShape.position;
-        pivotVertex.x = allData[nearestShape.objId].vertex[x]
-        pivotVertex.y = allData[nearestShape.objId].vertex[y]
+        // set origin for translation
+        pivotVertex.x = nearestShape.selectedPoint.x;
+        pivotVertex.y = nearestShape.selectedPoint.y;
     }
 
     return {
         objId: nearestShape.objId
     }
 }
-/**
- * JSON to stringify allData
- */
