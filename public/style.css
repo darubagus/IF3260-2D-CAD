@@ -1,59 +1,62 @@
 /* body background color grey */
 body {
-    background-color: #363636;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+  background-color: #363636;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 /* canvas background color white and centered and 800x600 size*/
 canvas {
-    background-color: #FFFFFF;
-    width: 500px;
-    height: 500px;
+  background-color: #ffffff;
+  width: 500px;
+  height: 500px;
 }
 
 .toolbar {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    width: 500px;
-    height: 50px;
-    background-color: #1d1d1d;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  width: 500px;
+  height: 50px;
+  background-color: #1d1d1d;
 }
 
 #fill-label {
-    /* color: white; */
-    background-color: white;
-    padding: 2px;
+  /* color: white; */
+  background-color: #efefef;
+  padding: 2px;
 }
 
 .collapsible {
-    background-color: #777;
-    color: white;
-    cursor: pointer;
-    padding: 18px;
-    width: 500px;
-    border: none;
-    text-align: left;
-    outline: none;
-    font-size: 15px;
-  }
-  
-  .active, .collapsible:hover {
-    background-color: #555;
-  }
-  
-  .content {
-    width: 500px;
-    display: none;
-    overflow: hidden;
-    background-color: #d9ff00;
-  }
+  background-color: #777;
+  color: white;
+  cursor: pointer;
+  padding: 18px;
+  width: 500px;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+}
 
-  .content p, .content ul, .content ol {
-    margin: 5px;
-    color: rgb(0, 0, 0);
-  }
+.active,
+.collapsible:hover {
+  background-color: #555;
+}
+
+.content {
+  width: 500px;
+  display: none;
+  overflow: hidden;
+  background-color: #d9ff00;
+}
+
+.content p,
+.content ul,
+.content ol {
+  margin: 5px;
+  color: rgb(0, 0, 0);
+}
